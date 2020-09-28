@@ -33,4 +33,18 @@ Hypothesis 4. Bike rented in a bike station will be higher during weekdays
 
 Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
 
-All the above hypotheses are falsifiable by using our data. In fact, the following metrics can help us to prove/disprove them
+All the above hypotheses are falsifiable by using our data. In fact, the below metrics can help us to prove/disprove them
+
+# Metrics
+To tackle H1 we will use NoEmployee data from London_census to calculate ratio of employee using this formula –> RatioEmployee = (NoEmployee / (PopDen * AreaSqKm))
+
+To tackle H2 we will use GrenSpace from LondonCensus data where we will consider the greenspace in square kilo meter.
+
+To tackle H3 we will use BornUK and NotBornUK from London census data to calculate ratio as RatioBornUK = (BornUK / (BornUK + NotBornUK))
+
+To tackle H4 we will use Start_date from bike_station data
+
+To prove hypothesis H5 we will use Start_hour from Bike_journey data.
+
+Removing unnecessary columns from london census dataset and used row wise manipulationand transforming the data as per our hypothesis.
+
