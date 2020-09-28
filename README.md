@@ -23,10 +23,10 @@ The two dataset has 771 unique values which is good overlap.
 # Hypothesis
 This step is called hypothesis creation, this is a very important step before performing a data analysis operation. Because it will give and idea about what can be the possibilities/reason due to which more bikes are hired at particular station compared to other station.
 
-### Hypothesis 1. Bike demand will be higher where ratio of number of employees are higher near that station
-### Hypothesis 2. Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground.
-### Hypothesis 3. Higher the number of bike rented in sation where ratio of number of people not born in UK are more.
-### Hypothesis 4. Bike rented in a bike station will be higher during weekdays
-### Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
+Hypothesis 1. Bike demand will be higher where ratio of number of employees are higher near that station
+Hypothesis 2. Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground.
+Hypothesis 3. Higher the number of bike rented in sation where ratio of number of people not born in UK are more.
+Hypothesis 4. Bike rented in a bike station will be higher during weekdays
+Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
 
 All the above hypotheses are falsifiable by using our data. In fact, the following metrics can help us to prove/disprove them
