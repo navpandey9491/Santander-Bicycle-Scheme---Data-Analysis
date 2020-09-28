@@ -36,15 +36,57 @@ Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
 All the above hypotheses are falsifiable by using our data. In fact, the below metrics can help us to prove/disprove them
 
 # Metrics
-To tackle H1 we will use NoEmployee data from London_census to calculate ratio of employee using this formula –> RatioEmployee = (NoEmployee / (PopDen * AreaSqKm))
+To tackle hypothesis 1 we will use NoEmployee data from London_census to calculate ratio of employee using this formula –> RatioEmployee = (NoEmployee / (PopDen * AreaSqKm))
 
-To tackle H2 we will use GrenSpace from LondonCensus data where we will consider the greenspace in square kilo meter.
+To tackle hypothesis 2 we will use GrenSpace from LondonCensus data where we will consider the greenspace in square kilo meter.
 
-To tackle H3 we will use BornUK and NotBornUK from London census data to calculate ratio as RatioBornUK = (BornUK / (BornUK + NotBornUK))
+To tackle hypothesis 3 we will use BornUK and NotBornUK from London census data to calculate ratio as RatioBornUK = (BornUK / (BornUK + NotBornUK))
 
-To tackle H4 we will use Start_date from bike_station data
+To tackle hypothesis 4 we will use Start_date from bike_station data
 
 To prove hypothesis H5 we will use Start_hour from Bike_journey data.
 
 Removing unnecessary columns from london census dataset and used row wise manipulationand transforming the data as per our hypothesis.
+
+# Data Processing
+
+We need to transform the data as per the above hypothesis and unnecessary columns are eimited from the dataset.
+
+Now the next step is to merge the dataset together, we have used geosphere package. We were given lat and log of stations and we are given centroid of the ward in London with its area in sq KM. We calulated the distance from the station to the centroid using distgeo() function and if the distance of station is less than the radius of the ward we implicitly attached the station id to that ward. The distGeo function calculating the distance between the 2 pairs of coordinates. Since the vectors of the coordinates are of the same length we are using this technique.
+
+We will now standarised the data after combining the all three dataset into a single dataset.
+
+## Splitting the data into train and test
+
+Now for implementing the algorithm we have used train and test method, we can also use k-fold validation method.
+
+# Algorithm application
+
+Applying linear regression on the given dataset for training the algorithm using linear regression
+
+# Finding
+
+After we run our regression task, we will have in output its predictions. From this output, we need to investigate wheather hypothesis are true or false.
+
+Hypothesis 1 : Bike demand will be higher where ratio of number of employees are higher near that station, true hypothesis because people who are employed might hiring the bikes to go to office.
+
+Hypothesis 2 : Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground, true hypothesis because the more green the area more will people hire bike for cycling.
+
+Hypothesis 3 : Higher the number of bike rented in station where ratio of number of people not born in UK are more bikes, true Hypothesis  because there would be chance of many tourist hiring the bike.
+
+Hypothesis 4 :Bike demand is higher during weekdays as compared to weekend - False
+
+Hypothesis - since number of people using bike for office commute would be less as comapred to people hiring bike on weekday to ride.
+
+Hypothesis 5 : Bike demand is higher during the peak time, true hypothesis because during morning and evening time around 8-10 AM due to office hours bike demand would be more.
+
+# Limitation
+Looking at the dataset we can see that data is only availabe for the month of august and september and not the whole year which is not sufficient for better prediction.
+
+The demand of bike may change due to various other factors such as season, weather condition which is not given in the dataset which might result into incorrect prediction.
+
+The distance of bike station from train station or tube station is not given which might also be a factor for consideration during prediction.
+
+
+
 
