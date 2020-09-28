@@ -17,3 +17,16 @@ The Amelia package is useful to see whether our data contains missing values.
 
 First we need to check how many duplicate values are present in the dataset. To the duplicate values in the dataset and see how many unique values are present in bike _journey dataset we have taken the field #### Start_Station_ID. Similary checked the number of unique values in #### bike_station dataset using field station_ID
 
+The code above shows that in the bike journey data, the Station_ID field contains 779 uniquevalues and bike journey data contains 773 unique values. 
+The two dataset has 771 unique values which is good overlap.
+
+# Hypothesis
+## This step is called hypothesis creation, this is a very important step before performing a data analysis operation. Because it will give and idea about what can be the possibilities/reason due to which more bikes are hired at particular station compared to other station.
+
+## Hypothesis 1. Bike demand will be higher where ratio of number of employees are higher near that station
+## Hypothesis 2. Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground.
+## Hypothesis 3. Higher the number of bike rented in sation where ratio of number of people not born in UK are more.
+## Hypothesis 4. Bike rented in a bike station will be higher during weekdays
+## Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
+
+All the above hypotheses are falsifiable by using our data. In fact, the following metrics can help us to prove/disprove them
