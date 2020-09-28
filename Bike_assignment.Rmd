@@ -1,0 +1,257 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# CST4070 - Coursewok 2
+
+## Navneet Pandey(M00711873)
+
+## Problem definition
+
+##### Three dataset is available bike journey, bike station and London census
+
+##### Spatial granularity: Bike station
+
+##### Temporal granularity : Hour
+
+##### Goal is to predict the total number of bike hired at each station by implementing a data science method
+
+## Pre-processing
+
+##### Importing the Library for reading and manipulating csv file
+```{r}
+library(readr)
+library(dplyr) 
+```
+##### Importing the datasets
+```{r}
+bike_j <- read_csv('bike_journeys.csv') 
+bike_s <- read_csv('bike_stations.csv')
+london_c <- read_csv('London_census.csv')
+```
+##### First looking at all the dataset to understand the data.
+```{r}
+head(bike_j)
+```
+```{r}
+head(bike_s)
+```
+```{r}
+head(london_c)
+```
+##### Several steps needs to be done here.
+##### Such as inspecting the data for any missing value using missmap library
+##### Checking whether data contains null values or outliers.
+##### The Amelia package is useful to see whether our data contains missing values, here we can see that there is no missing value.
+```{r}
+library(Amelia) 
+missmap(london_c)
+
+```
+```{r}
+library(Amelia) 
+missmap(bike_s)
+```
+```{r}
+library(Amelia) 
+missmap(bike_j)
+```
+##### Checking the duplicate values in the dataset and see how many unique values are present using the field Start_Station_ID
+```{r}
+length(unique(bike_j$Start_Station_ID))
+```
+##### Similary checking the number of unique values in bike station dataset using field station_ID
+```{r}
+length(unique(bike_s$Station_ID))
+```
+##### We can see that datasets bike_j and bike_s contain the field Station_ID and Start_Startion_ID respectively which represents stations and interset function is used here to get the unique values of station_ID
+```{r}
+length(unique(intersect(bike_j$Start_Station_ID,bike_s$Station_ID)))
+```
+##### The code above shows that in the bike journey data, the Station_ID field contains 779 unique values and bike journey data contains 773 unique values. The two dataset has 771 unique values which is good overlap.
+
+##### Further data pre-processing maybe required to inspect those values which are not matching to get the exact overlap. Since these steps require time it is not recommended to perform during hackathon.
+
+## Hypothesis
+
+##### Hypothesis 1. Bike demand will be higher where ratio of number of employees are higher near that station
+
+##### Hypothesis 2. Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground.
+
+##### Hypothesis 3. Higher the number of bike rented in sation where ratio of number of people not born in UK are more.
+
+##### Hypothesis 4. Bike rented in a bike station will be higher during weekdays
+
+##### Hypothesis 5. Bike rented in a bike station will be higher during the peak hour
+
+##### All hypotheses are falsifiable by using our data. In fact, the following metrics can help us to prove/disprove them
+
+## Metrics
+
+##### To prove/disprove our hypothesis, we propose the following metrics:
+
+##### To tackle H1 we will use NoEmployee data from London_census to calculate ratio of employee using this formula --> RatioEmployee = (NoEmployee / (PopDen * AreaSqKm))
+
+##### To tackle H2 we will use GrenSpace from LondonCensus data where we will consider the greenspace in square kilo meter.
+
+##### To tackle H3 we will use BornUK and NotBornUK from London census data to calculate ratio as RatioBornUK = (BornUK / (BornUK + NotBornUK))
+
+##### To tackle H4 we will use Start_date from bike_station data
+
+##### To prove hypothesis H5 we will use Start_hour from Bike_journey data.
+
+
+##### Removing unnecessary columns from london census dataset and used row wise manipulation and transforming the data as per our hypothesis.
+
+## Data Processing
+
+##### We need to transform our data from format ** < WardCode, WardName, borough, NESW, AreaSqKm, lon, lat, IncomeScor, LivingEnSc, NoEmployee, GrenSpace, PopDen, BornUK, NotBornUK, NoCTFtoH, NoDwelling, NoFlats, NoHouses, NoOwndDwel, MedHPrice > ** into the format ** <RatioEmployee, RatioBornUK, start_month, greenspace, bike_station>**
+
+##### Forward-pipe operator is used here to pass the left-hand side input through the right-hand side operator to do the computation.
+
+#####  Here the data is transformed and unnecessary columns are eliminated from the dataset.
+```{r}
+# Metrices
+lc <- london_c %>% select(-WardCode, -WardName, -borough, -NESW)%>% rowwise() %>%  transform(RatioEmployee = (NoEmployee / (PopDen * AreaSqKm)),  
+RatioBornUK = (BornUK / (BornUK + NotBornUK))) %>%  select(-NoEmployee, -PopDen, -BornUK, -NotBornUK) # Removing unnecessary columns 
+
+head(lc)
+```
+##### Now the next step is to merge the dataset together, we have used **geosphere package**. We were given lat and log of stations and we are given centroid of the ward in London with its area in sq KM. We calulated the distance from the station to the centroid using distgeo() function and if the distance is less than the radius of the ward we implicitly attached the station id to that ward.
+
+##### The distGeo function calculating the distance between the 2 pairs of coordinates. Since the vectors of the coordinates are of the same length we are using this technique. 
+
+##### Since there is not a 1 to 1 relationship between **bike_s** and **lc** dataset, merging two dataset into 1 large dataframe called **station_detail** to perform the analysis.
+
+```{r}
+library(geosphere) # For working with geospatial data(latitude and longitude)
+station_detail <- merge(bike_s, lc, all = TRUE) %>% # Merge two data frames     
+  rowwise() %>% filter(distGeo(c(Longitude,Latitude), c(lon, lat)) <= (sqrt(AreaSqKm / pi) * 1000)) # Check distance between station and centroid of ward, if less than radius of ward include record 
+head(station_detail)
+```
+##### Here, selected the necessary column from the **bike_j** dataset like Start_Station_ID, Start_Hour, Start_Month, Start_Date for computation and renamed the column Start_Station_ID to Station_ID. The new columns are stored in **bike_journey dataset** so that we can join the next step.
+```{r}
+bike_journey <- bike_j %>% select(Start_Station_ID, Start_Hour, Start_Month, Start_Date) %>% rename(Station_ID = Start_Station_ID) # Rename column so that we can join in next step 
+
+head(bike_journey)
+```
+##### Unique and common values from bike_journey and station_detail is extracted using station_ID column, the output has a good and unique overlap .
+```{r}
+length(unique(intersect(bike_journey$Station_ID,station_detail$Station_ID)))
+```
+##### Joined ** bike_journey ** and ** station_detail ** dataset using common column ** station_ID ** in both the datasets with the help of inner_join
+
+##### Used count method to calculate the number of rides at each station grouped by start month, start date and start hour with station ID, so that we got the rides taken in particular station per hour granularity. Also, removed unnecessary columns which are not mandatory during computation.
+
+##### **final_data_set** is the final merged dataset on which operation is going to be perfomed.
+```{r}
+final_data_set <- inner_join(bike_journey, station_detail) %>% # Join on Station_ID     
+  count(name = 'Rides', Station_ID, Start_Month, Start_Date, Start_Hour) %>% inner_join(station_detail) %>% # Add remaning columns     
+  select(-Station_Name, -lon, -lat, -NoFlats, -NoHouses, -NoOwndDwel, -MedHPrice, -NoCTFtoH, -NoDwelling, -Capacity, -Latitude, -Longitude, ) %>% # Removed unnecessary columns     
+  select(Rides, everything()) # Putting the Rides column first
+
+head(final_data_set)
+```
+##### Showing the data type of final dataset.
+```{r}
+str(final_data_set)
+```
+```{r}
+summary(final_data_set)
+```
+```{r}
+library(corrplot) # For working with correlation plots 
+corrplot(cor(final_data_set)) 
+```
+##### Showing the summary of standarised data
+```{r}
+library(data.table)
+stdandarised_data=as.data.table(scale(final_data_set))
+summary(stdandarised_data)
+```
+##### Printing the standarised data
+```{r}
+print(stdandarised_data)
+```
+##### Showing the number of rides taken from station per hour. For time granularity, I have selected records per hour using filter.
+```{r}
+info_hour_four <- final_data_set %>% filter(Start_Hour == 4) # For time granularity, we are selecting records per hour 
+print(info_hour_four)
+
+```
+##### Showing the number of rides taken from station at hour 6 PM. For time granularity, I have selected records per hour
+```{r}
+info_hour_18 <- final_data_set %>% filter(Start_Hour == 18) # For time granularity, we are selecting records per hour 
+head(info_hour_18)
+```
+##### Showing the number of rides taken from stations at 8 AM.
+```{r}
+info_hour_08= final_data_set %>%     filter(Start_Hour == 8) # For time granularity, we are selecting records per hour 
+head(info_hour_08)
+```
+##### Below we have checked the data correlation and can see that we barely have multicollinearity.
+```{r}
+library(corrplot) # For working with correlation plots 
+corrplot(cor(stdandarised_data)) 
+```
+##### Now for implementing the algorithm we have used train and test method which is quick solution because implementing K-fold during hackathon will consume time.
+```{r}
+# Training & Testing
+set.seed(100) 
+train_data = sample(1:nrow(stdandarised_data), 0.75*nrow(stdandarised_data)) # Select 75 percent for training data
+train = stdandarised_data[train_data,]# Segregated training data 
+test = stdandarised_data[-train_data,] # Segregated test data 
+print(train)
+print(test)
+```
+```{r}
+head(test)
+```
+##### Applying linear regression on the given dataset for training the algorithm using linear regression and then the trained model is tested for prediction and also below the beta coefficients which can help to understand the model.
+```{r}
+linear_regression = lm(Rides ~ ., data=train) # Use linear regression on training data 
+train_predict = predict(linear_regression, train) # Check prediction
+test_predict = predict(linear_regression, test)
+summary(linear_regression)
+```
+#### We can see that both the R2 are very similar, which indicates the stability of the model. Therefore we do not need any regularisation.
+```{r}
+print(paste('R2 on train data:', cor(train_predict, train$Rides)^2))
+print(paste('R2 on test data:', cor(test_predict, test$Rides)^2))
+```
+```{r}
+plot(linear_regression)
+```
+##### We can also visualise the above values
+```{r}
+library(ggplot2)
+
+ggplot(, aes(x = names(linear_regression$coefficients), y=linear_regression$coefficients)) +
+  geom_bar(stat="identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 1)) +
+  xlab("coefficient") +
+  ylab("normalised value")
+```
+## Main Finding
+
+##### After we run our regression task, we will have in output its predictions. From this output, we need to investigate wheather hypothesis are true or false.
+
+##### Hypothesis 1 : Bike demand will be higher where ratio of number of employees are higher near that station - True hypothesis - becuase people who are employed might hiring the bikes to go to office.
+
+##### Hypothesis 2 :  Bike demand will be higher in a bike station which is close proximity of the green space such as parks and ground - True Hypothesis because the more green the area more will people hire bike for cycling.
+
+##### Hypothesis 3 : Higher the number of bike rented in station where ratio of number of people not born in UK are more bikes. - True Hypothesis - because there would be chance of many tourist hiring the
+
+##### Hypothesis 4 :Bike demand is higher during weekdays as compared to weekend - False Hypothesis - since number of people using bike for office commute would be less as comapred to people hiring bike on weekday to ride..
+
+##### Hypothesis 5 :  Bike demand is higher during the peak time - True hypothesis - because during morning and evening time around 8-10 AM due to office hours bike demand would be more.
+
+## Limitation
+
+##### Looking at the dataset we can see that data is only availabe for the month of august and september and not the whole year which is not sufficient for better prediction.
+
+##### The demand of bike may change due to various other factors such as season, weather condition which is not given in the dataset which might result into incorrect prediction.
+
+##### The distance of bike station from train station or tube station is not given which might also be a factor for consideration during prediction.
+
+
