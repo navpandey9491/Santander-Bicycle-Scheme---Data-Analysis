@@ -1,6 +1,6 @@
 # Santander-Bicycle-Scheme-London - Data Analysis
 Santander Cycles is a public bicycle hire scheme in London. This scheme was launched by Borris Johnson, the then Mayor of London. 
-This scheme was sponsored by Santander bank UK to promote bicycle 
+This scheme was sponsored by Santander bank UK to promote bicycles
 
 ## Problem Statement
 Goal is to predict the total number of bike hired at each station considering various given parameters.
